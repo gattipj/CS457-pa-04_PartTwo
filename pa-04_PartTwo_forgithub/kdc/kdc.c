@@ -129,6 +129,28 @@ int main ( int argc , char * argv[] )
     fprintf( log , "         MSG2 New\n");
     BANNER( log ) ;
 
+    myKey_t Ks;
+    size_t  LenMsg2 ;
+    uint8_t  *msg2 = malloc(LenMsg2);
+    if (getKeyFromFile("kdc/sessionKey.bin", &Ks) != 1) {
+        fprintf(stderr, "\nCould not get the Session key & IV.\n");
+        fprintf(log, "\nCould not get the Session key & IV.\n");
+        fclose(log);
+        exit(-1);
+    }
+    fprintf(log, "KDC: created this session key Ks { Key , IV } (%lu Bytes ) is:\n", KEYSIZE);
+    BIO_dump_indent_fp(log, &Ks, KEYSIZE, 4);
+    fprintf(log, "\n");
+    fflush(log);
+
+    LenMsg2 = MSG2_new( log , &msg2 , &Ka, &Kb, &Ks, IDa , IDb , &Na ) ;
+
+    // Send MSG2 to Amal in the appropriate pipe
+    write(fd_K2A, msg2, LenMsg2);
+    fprintf(log, "The KDC sent the Encrypted MSG2 ( %lu bytes ) to Amal Successfully\n", LenMsg2);
+
+    // Deallocate any memory allocated for msg2
+    free(msg2);
 
     //*************************************   
     // Final Clean-Up

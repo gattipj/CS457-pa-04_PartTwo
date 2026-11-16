@@ -150,6 +150,41 @@ int main ( int argc , char * argv[] )
     fprintf( log , "         MSG2 Receive\n");
     BANNER( log ) ;
 
+    myKey_t Ks;
+    size_t lentktCipher;
+    uint8_t *tktCipher;
+
+    // The way I implemented this was kinda weird. Basically MSG2_receive() does all the work
+    // including decryption, and this code just prints what it got back
+
+    MSG2_receive(log, fd_K2A, &Ka, &Ks, &IDb, &Na, &lentktCipher, &tktCipher);
+
+    fprintf(log, "Amal decrypted message 2 from the KDC into the following:\n");
+
+    // Ks
+    fprintf(log, "    Ks { Key , IV } (%lu bytes ) is:\n", KEYSIZE);
+    BIO_dump_indent_fp(log, &Ks, KEYSIZE, 4);
+    fprintf(log, "\n");
+    fflush(log);
+
+    // IDb
+    fprintf(log, "    IDb (%lu bytes):\n", strlen(IDb) + 1);
+    BIO_dump_indent_fp(log, IDb, strlen(IDb) + 1, 4);
+    fprintf(log, "\n");
+    fflush(log);
+
+    // Na
+    fprintf(log, "    Recieved copy of Na (%lu bytes):\n", NONCELEN);
+    BIO_dump_indent_fp(log, Na, NONCELEN, 4);
+    fprintf(log, "\n");
+    fflush(log);
+
+    // Encrypted Ticket
+    fprintf(log, "    Encrypted Ticket (%lu bytes):\n", lentktCipher);
+    BIO_dump_indent_fp(log, tktCipher, lentktCipher, 4);
+    fprintf(log, "\n");
+    fflush(log);
+
     //*************************************
     // Construct & Send    Message 3
     //*************************************
